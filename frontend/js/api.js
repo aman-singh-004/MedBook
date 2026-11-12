@@ -1,5 +1,5 @@
-// API Configurations
-const BASE_URL = 'http://localhost:8080/api';
+
+const BASE_URL = 'https://' + 'medbook-wjv0.onrender.com/api';
 
 /**
  * Centered API Request Handler
@@ -7,7 +7,7 @@ const BASE_URL = 'http://localhost:8080/api';
  */
 async function apiRequest(endpoint, options = {}) {
     const token = sessionStorage.getItem('token');
-    
+
     // Default Headers
     const headers = {
         'Content-Type': 'application/json',
@@ -31,8 +31,8 @@ async function apiRequest(endpoint, options = {}) {
 
     try {
         const response = await fetch(`${BASE_URL}${endpoint}`, config);
-        
-        // Handle no-content responses (like DELETE or 204)
+
+        // Handle no-content responses
         if (response.status === 204) {
             return null;
         }
@@ -40,24 +40,31 @@ async function apiRequest(endpoint, options = {}) {
         const data = await response.json().catch(() => null);
 
         if (!response.ok) {
-            // Intercept 401 Unauthorized (expired/invalid token)
             if (response.status === 401) {
                 clearSession();
-                // Avoid infinite redirect if already on login page
-                if (!window.location.pathname.endsWith('index.html') && window.location.pathname !== '/' && window.location.pathname !== '') {
+
+                if (
+                    !window.location.pathname.endsWith('index.html') &&
+                    window.location.pathname !== '/' &&
+                    window.location.pathname !== ''
+                ) {
                     showToast('Session expired. Please log in again.', 'error');
+
                     setTimeout(() => {
                         window.location.href = 'index.html';
                     }, 1500);
                 }
             }
-            
-            // Extract error message
-            const errMsg = (data && data.message) || `Request failed with status ${response.status}`;
+
+            const errMsg =
+                (data && data.message) ||
+                `Request failed with status ${response.status}`;
+
             throw new Error(errMsg);
         }
 
         return data;
+
     } catch (error) {
         console.error(`API Error on ${endpoint}:`, error);
         throw error;
@@ -67,6 +74,7 @@ async function apiRequest(endpoint, options = {}) {
 // Session Management Helpers
 function saveSession(authResponse) {
     sessionStorage.setItem('token', authResponse.token);
+
     sessionStorage.setItem('user', JSON.stringify({
         id: authResponse.id,
         username: authResponse.username,
@@ -91,8 +99,8 @@ function getCurrentUser() {
 
 // Global Custom Toast Helper
 function showToast(message, type = 'success') {
-    // Check if container exists, if not create it
     let container = document.querySelector('.toast-container');
+
     if (!container) {
         container = document.createElement('div');
         container.className = 'toast-container';
@@ -101,9 +109,9 @@ function showToast(message, type = 'success') {
 
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
-    
-    // Choose icons based on status
+
     let icon = 'ℹ️';
+
     if (type === 'success') icon = '✅';
     if (type === 'error') icon = '❌';
 
@@ -114,11 +122,12 @@ function showToast(message, type = 'success') {
 
     container.appendChild(toast);
 
-    // Auto remove toast
     setTimeout(() => {
         toast.classList.add('fade-out');
+
         toast.addEventListener('animationend', () => {
             toast.remove();
+
             if (container.children.length === 0) {
                 container.remove();
             }

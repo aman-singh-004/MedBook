@@ -697,7 +697,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Trigger server-side logout
             const token = sessionStorage.getItem('token');
             if (token) {
-                await fetch('http://localhost:8080/api/auth/logout', {
+                await fetch('https://medbook-wjv0.onrender.com/api/auth/logout', {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
